@@ -3,7 +3,14 @@ import reneson from '/reneson.png'
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const links=['Home', 'Services', 'Portfolio', 'About', 'Contact'];
+
+  const links = [
+  { name: "Home", href: "/" },
+  { name: "Services", href: "#services" },
+  { name: "Portfolio", href: "#portfolio" },
+  { name: "About", href: "/about" },
+  { name: 'Contact', href: "#contact"}
+];
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -23,7 +30,7 @@ const Navbar = () => {
         
         <div className="hidden md:flex items-center space-x-10 text-sm font-medium text-gray-600">
           {links.map((item) => (
-            <a key={item} href={`#${item.toLowerCase()}`} className="hover:text-[#426369] transition-colors">{item}</a>
+            <a key={item.name} href={item.href} className="hover:text-[#426369] transition-colors">{item.name}</a>
           ))}
         </div>
 

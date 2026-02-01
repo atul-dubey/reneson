@@ -1,29 +1,7 @@
 import React from 'react';
 import { Star, StarHalf, User, ArrowLeft, ArrowRight } from 'lucide-react';
+import { useData } from '../context/DataContext';
 
-const testimonials = [
-  {
-    avatar: null, 
-    name: "James Smith",
-    role: "CTO, LogiSync",
-    text: "Reneson transformed our manual logistics process into a fully automated IoT-driven system. Their attention to detail is unmatched.",
-    star: 5,
-  },
-  {
-    avatar: "https://res.cloudinary.com/dmg0a7wv7/image/upload/v1766664584/carRental/zsclyrtozm25kreyjlcg.jpg",
-    name: "Anurag patel",
-    role: "Founder, ShopNext",
-    text: "The web platform developed by Reneson is incredibly fast and intuitive. Our conversion rates increased by 40% in the first quarter.",
-    star: 4.5,
-  },
-  {
-    avatar: null,
-    name: "Marc Davis",
-    role: "Head of Product, GreenFlow",
-    text: "Working with their engineering team was a breeze. They integrated seamlessly with our existing stack and delivered ahead of schedule.",
-    star: 4,
-  }
-];
 
 const RatingStars = ({ rating }) => {
   const stars = [];
@@ -42,7 +20,10 @@ const RatingStars = ({ rating }) => {
   return <div className="flex gap-1">{stars}</div>;
 };
 
-const Testimonials = () => (
+const Testimonials = () =>{
+  const {testimonials}=useData();
+
+  return  (
   <section className="py-24 bg-gray-50/50 overflow-hidden">
     <div className="max-w-7xl mx-auto px-6">
       <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
@@ -88,6 +69,7 @@ const Testimonials = () => (
       </div>
     </div>
   </section>
-);
+)
+};
 
 export default Testimonials;

@@ -1,16 +1,11 @@
 import React from 'react';
+import { useData } from '../context/DataContext';
 
-const clients = [
-  { name: "Global Tech", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjE3IbOFclX4cyMokQsgu7hDSn6iAHG83ZTw&s" },
-  { name: "Synthetic AI", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnt253Qlda-6a5x8LltLHZD4IWMCmk7LOQ9Q&s" },
-  { name: "Cloud Flow", logo: "https://1000logos.net/wp-content/uploads/2021/04/Adobe-logo.png" },
-  { name: "Nexus Core", logo: "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" },
-  { name: "Vortex Labs", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZ7ca4JTx5cBLKn9F6fd_70JHv2PReeOsEsA&s" },
-  { name: "Quantum Edge", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQBBBUUNIFQdJ7AAlx9NufMlUI1sslkJENqUw&s" },
-];
 
 const ClientStrip = () => {
   // We double the array to ensure a seamless infinite loop
+  const {clients}=useData();
+
   const displayClients = [...clients, ...clients];
 
   return (

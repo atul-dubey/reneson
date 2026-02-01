@@ -7,6 +7,7 @@ import Stats from '../components/Stats'
 import Testimonials from '../components/Testinomials'
 import ScheduleCall from '../components/ScheduleCall'
 import Contact from '../components/Contact'
+import SelectedWork from '../components/SelectedWork'
 
 const Home = () => {
   return (
@@ -14,7 +15,8 @@ const Home = () => {
       <Hero/>  
       <ClientStrip/>
       <Services/>
-      <WhyChooseUs/>
+      {/* <WhyChooseUs/> */}
+      <SelectedWork/>
       <Stats/>
       <Testimonials/>
       <ScheduleCall/>

@@ -2,9 +2,9 @@ import { Linkedin, Twitter, Mail, Instagram, MapPin, Phone } from 'lucide-react'
 import reneson from '/reneson.png'
 
 const quickLinks = [
-  { name: "Home", href: "#" },
+  { name: "Home", href: "/" },
   { name: "Portfolio", href: "#portfolio" },
-  { name: "About Us", href: "#about" },
+  { name: "About Us", href: "/about" },
   { name: "Contact", href: "#contact" },
 ];
 
@@ -87,7 +87,7 @@ const Footer = () => (
             </li>
             <li className="flex gap-3 items-center">
               <Phone className="w-4 h-4 text-[#426369] shrink-0" />
-              <a href="tel:+1234567890" className="hover:text-[#426369] transition-colors">+91 7805800320</a>
+              <a href="tel:+1234567890" className="hover:text-[#426369] transition-colors">+91 8072685710</a>
             </li>
           </ul>
         </div>
