@@ -17,12 +17,14 @@ const TeamCard = ({ name, specialty, linkedin, github, image }) => (
         <div className="flex gap-3 bg-white/90 backdrop-blur-md rounded-full px-4 py-2 border border-gray-100">
           <a
             href={linkedin}
+            target="_blank"
             className="w-8 h-8 flex items-center justify-center rounded-full text-[#426369] hover:bg-[#426369] hover:text-white transition-colors"
           >
             <Linkedin size={14} />
           </a>
           <a
             href={github}
+            target="_blank"
             className="w-8 h-8 flex items-center justify-center rounded-full text-[#426369] hover:bg-[#426369] hover:text-white transition-colors"
           >
             <Github size={14} />

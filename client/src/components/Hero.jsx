@@ -1,8 +1,11 @@
 import React from 'react';
 import { ChevronRight ,ArrowUpRight  } from 'lucide-react';
 import hero from '../assets/hero.png';
+import { useData } from '../context/DataContext';
 
 const Hero = () => {
+  const {setShowScheduler}=useData();
+  
   return (
     <section className="relative pt-40 pb-20 overflow-hidden">
       {/* Background Blobs */}
@@ -19,7 +22,7 @@ const Hero = () => {
             From IoT systems and AI integration to custom software and digital transformation, we design and build technology that creates real impact.
           </p>
           <div className="flex flex-wrap gap-4">
-            <button className="bg-[#426369] text-white px-8 py-4 rounded-xl font-bold hover:bg-[#354f54] transition-all flex items-center gap-2 shadow-xl shadow-teal-900/20">
+            <button onClick={()=>setShowScheduler(true)} className="bg-[#426369] text-white px-8 py-4 rounded-xl font-bold hover:bg-[#354f54] transition-all flex items-center gap-2 shadow-xl shadow-teal-900/20">
               Schedule Free Call <ChevronRight  className="w-5 h-5" />
             </button>
             <button className="border-2 border-gray-200 text-gray-700 px-8 py-4 rounded-xl font-bold hover:border-[#426369] hover:text-[#426369] transition-all flex items-center gap-2">

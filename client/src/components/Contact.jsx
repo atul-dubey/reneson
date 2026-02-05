@@ -1,6 +1,50 @@
-import { Phone, FileText, Activity, Send, Calendar } from 'lucide-react';
+import { Phone, FileText, Activity, Send, Calendar ,X } from 'lucide-react';
+import axios from "axios";
+import { useState } from 'react';
+import { useData } from '../context/DataContext';
 
-const Contact = () => (
+const Contact = () => {
+
+  let [name, setName]=useState("");
+  let [email, setEmail]=useState("");
+  let [message, setMessage]=useState("");
+  const {setShowScheduler}=useData();
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const data = {
+    name,
+    email,
+    message,
+  };
+
+  const endpoint=`${import.meta.env.VITE_BACKEND_URL}/api/contact`;
+  try {
+
+    const res = await axios.post(endpoint,data,);
+
+    if (res.data.success) {
+      alert("Message sent successfully!");
+      setName("");
+      setEmail("");
+      setMessage("");
+    } else {
+      alert(res.data.message);
+    }
+  } catch (error) {
+    console.error(error);
+
+    // axios gives better error info
+    alert(
+      error.response?.data?.message || "Server error, please try again"
+    );
+  }
+};
+
+
+  return (
+    <>
   <section id="contact" className="py-24 bg-white">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center max-w-3xl mx-auto mb-20">
@@ -34,26 +78,26 @@ const Contact = () => (
             ))}
           </div>
 
-          <button className="bg-[#426369] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 shadow-xl cursor-pointer">
+          <button    onClick={() => setShowScheduler(true)} className="bg-[#426369] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 shadow-xl cursor-pointer">
             Schedule a free call <Calendar className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="bg-gray-50/50 p-8 md:p-10 rounded-[2rem] border border-gray-100">
+        <div onSubmit={(e)=>handleSubmit(e)} className="bg-gray-50/50 p-8 md:p-10 rounded-[2rem] border border-gray-100">
           <form className="space-y-6">
             <div>
               <label className="block text-xs font-bold uppercase text-gray-400 mb-2 ml-1">Name</label>
-              <input type="text" className="w-full px-6 py-4 bg-white rounded-xl border border-gray-200 outline-none focus:ring-4 focus:ring-[#426369]/5" />
+              <input type="text" value={name} onChange={(e)=>setName(e.target.value)} className="w-full px-6 py-4 bg-white rounded-xl border border-gray-200 outline-none focus:ring-4 focus:ring-[#426369]/5" />
             </div>
             <div>
               <label className="block text-xs font-bold uppercase text-gray-400 mb-2 ml-1">Email</label>
-              <input type="email" className="w-full px-6 py-4 bg-white rounded-xl border border-gray-200 outline-none focus:ring-4 focus:ring-[#426369]/5" />
+              <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} className="w-full px-6 py-4 bg-white rounded-xl border border-gray-200 outline-none focus:ring-4 focus:ring-[#426369]/5" />
             </div>
             <div>
               <label className="block text-xs font-bold uppercase text-gray-400 mb-2 ml-1">Message</label>
-              <textarea rows="4" className="w-full px-6 py-4 bg-white rounded-xl border border-gray-200 outline-none resize-none"></textarea>
+              <textarea rows="4" value={message} onChange={(e)=>setMessage(e.target.value)} className="w-full px-6 py-4 bg-white rounded-xl border border-gray-200 outline-none resize-none"></textarea>
             </div>
-            <button className="w-full bg-[#426369] text-white py-5 rounded-xl font-bold text-lg flex items-center justify-center gap-3 cursor-pointer">
+            <button type='submit' className="w-full bg-[#426369] text-white py-5 rounded-xl font-bold text-lg flex items-center justify-center gap-3 cursor-pointer">
               Send Message <Send className="w-5 h-5" />
             </button>
           </form>
@@ -61,6 +105,9 @@ const Contact = () => (
       </div>
     </div>
   </section>
-);
+  </>
+)
+
+};
 
 export default Contact;

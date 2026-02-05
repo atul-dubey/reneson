@@ -46,6 +46,9 @@ export const DataProvider = ({ children }) => {
     fetchAllData();
   }, []);
 
+  const [showScheduler, setShowScheduler] = useState(false);
+  
+
   return (
     <DataContext.Provider
       value={{
@@ -56,6 +59,8 @@ export const DataProvider = ({ children }) => {
         loading,
         error,
         refetch: fetchAllData,
+        showScheduler,
+        setShowScheduler
       }}
     >
       {children}
