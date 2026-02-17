@@ -32,3 +32,22 @@ export const getStats = async (req, res) => {
     });
   }
 };
+
+
+export const updateStat = async (req, res) => {
+  try {
+    const updated = await statModel.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.status(200).json({ success: true, data: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Update stat failed" });
+  }
+};
+
+export const deleteStat = async (req, res) => {
+  try {
+    await statModel.findByIdAndDelete(req.params.id);
+    res.status(200).json({ success: true, message: "Stat deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Delete stat failed" });
+  }
+};

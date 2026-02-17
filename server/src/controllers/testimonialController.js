@@ -31,3 +31,25 @@ export const getTestimonials = async (req, res) => {
     });
   }
 };
+
+export const updateTestimonial = async (req, res) => {
+  try {
+    const testimonial = await testimonialModel.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    res.status(200).json({ success: true, data: testimonial });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteTestimonial = async (req, res) => {
+  try {
+    await testimonialModel.findByIdAndDelete(req.params.id);
+    res.status(200).json({ success: true, message: "Testimonial deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

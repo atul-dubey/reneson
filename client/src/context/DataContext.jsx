@@ -24,7 +24,7 @@ export const DataProvider = ({ children }) => {
         testimonialsRes,
         clientsRes,
       ] = await Promise.all([
-        axios.get(`${API_BASE_URL}/projects/all`),
+        axios.get(`${API_BASE_URL}/projects/featured`),
         axios.get(`${API_BASE_URL}/stats/all`),
         axios.get(`${API_BASE_URL}/testimonials/all`),
         axios.get(`${API_BASE_URL}/clients/all`),

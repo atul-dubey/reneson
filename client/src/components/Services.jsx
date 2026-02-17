@@ -1,29 +1,10 @@
-import { Cpu, BrainCircuit, Code2, GraduationCap } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
+import { servicesData as services} from "../assets/services";
 
-const services = [
-  { 
-    icon: Cpu, 
-    title: "IoT & Hardware", 
-    desc: "Smart connected ecosystems, PCB design, and firmware for industrial efficiency." 
-  },
-  { 
-    icon: Code2, 
-    title: "Software Development", 
-    desc: "Custom high-performance software built with modern architectural standards." 
-  },
-  { 
-    icon: BrainCircuit, 
-    title: "Artificial Intelligence", 
-    desc: "Predictive models and intelligent automation for data-driven results." 
-  },
-  { 
-    icon: GraduationCap, 
-    title: "Technical Training", 
-    desc: "Specialized technical workshops and skill development for teams.",
-  },
-];
+const Services = () => {
+  const navigate = useNavigate();
 
-const Services = () => (
+  return (
   <section id="services" className="py-24 bg-white">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
@@ -36,6 +17,7 @@ const Services = () => (
         {services.map((service, index) => (
           <div 
             key={index} 
+            onClick={() => navigate(`/service/${service.title}`)}
             className="group relative p-8 rounded-2xl border border-gray-100 bg-white hover:border-[#426369]/20 hover:shadow-2xl hover:shadow-[#426369]/10 transition-all duration-500 cursor-pointer flex flex-col h-full overflow-hidden"
           >
           
@@ -48,7 +30,7 @@ const Services = () => (
             </h3>
             
             <p className="text-gray-500 leading-relaxed text-sm mb-8 flex-grow">
-              {service.desc}
+              {service.shortDesc}
             </p>
             
             <div className="pt-4 border-t border-gray-50 mt-auto flex items-center justify-between opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-out">
@@ -64,6 +46,6 @@ const Services = () => (
       </div>
     </div>
   </section>
-);
+)};
 
 export default Services;

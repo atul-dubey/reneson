@@ -1,44 +1,7 @@
 import React from 'react';
 import { useData } from '../context/DataContext';
+import ProjectCard from './ProjectCard';
 
-
-const ProjectCard = ({ title, description, tech, image }) => (
-  <div className="group bg-white rounded-[1.5rem] overflow-hidden border border-gray-100 hover:border-[#426369]/20 transition-all duration-500">
-    {/* 1. Full Image (Monochrome to Color) */}
-    <div className="aspect-[16/10] overflow-hidden bg-gray-100">
-      <img 
-        src={image} 
-        alt={title} 
-        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-in-out scale-100 group-hover:scale-105"
-      />
-    </div>
-
-    {/* Content Container */}
-    <div className="p-10 text-center flex flex-col items-center">
-      {/* 2. Title */}
-      <h3 className="text-2xl font-extrabold text-gray-900 mb-3 tracking-tight">
-        {title}
-      </h3>
-      
-      {/* 3. Short Description */}
-      <p className="text-gray-500 text-sm leading-relaxed max-w-xs mb-8">
-        {description}
-      </p>
-      
-      {/* 4. Technologies (Minimal subtle tags) */}
-      <div className="flex flex-wrap justify-center gap-2">
-        {tech.map((item, index) => (
-          <span 
-            key={index} 
-            className="text-[10px] font-bold text-[#426369] uppercase tracking-[0.2em] px-3 py-1 bg-gray-50 rounded-full border border-transparent group-hover:border-[#426369]/10 transition-colors"
-          >
-            {item}
-          </span>
-        ))}
-      </div>
-    </div>
-  </div>
-);
 
 export default function SelectedWork() {
 

@@ -4,7 +4,9 @@ const projectSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     description: { type: String, required: true },
+    serviceType: {type: String, required:true,enum: ['IoT & Hardware','Software Development','Artificial Intelligence','Training']} ,
     tech: [{ type: String }],
+    isFeatured: {type: Boolean,default: false},
     image: { type: String, required: true },
   },
   { timestamps: true }

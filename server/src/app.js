@@ -6,6 +6,7 @@ import { testimonialRoutes } from './routes/testimonialRoutes.js';
 import { clientRoutes } from './routes/clientRoutes.js';
 import { teamRoutes } from './routes/teamRoutes.js';
 import { contactRoutes } from './routes/contactRoutes.js';
+import { adminLogin } from './controllers/adminAuthController.js';
 
 const app=express();
 
@@ -22,5 +23,6 @@ app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/clients", clientRoutes);
 app.use("/api/team", teamRoutes);
 app.use("/api",contactRoutes);
+app.use('/api/login',adminLogin);
 
 export {app};

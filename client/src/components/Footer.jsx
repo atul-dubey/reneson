@@ -3,18 +3,16 @@ import reneson from '/reneson.png'
 
 const quickLinks = [
   { name: "Home", href: "/" },
-  { name: "Portfolio", href: "#portfolio" },
+  { name: "Portfolio", href: "/portfolio" },
   { name: "About Us", href: "/about" },
-  { name: "Contact", href: "#contact" },
+  { name: "Contact", href: "/#contact" },
 ];
 
 const servicesLinks = [
-  { name: "IoT Solutions", href: "#services" },
-  { name: "Artificial Intelligence", href: "#services" },
-  { name: "Software Development", href: "#services" },
-  { name: "Digital Transformation", href: "#services" },
-  { name: "Hardware Engineering", href: "#services" },
-  { name: "Staff Augmentation", href: "#services" },
+  { name: "IoT & Hardware"},
+  { name: "Software Development"},
+  { name: "Artificial Intelligence"},
+  { name: "Training" },
 ];
 
 const Footer = () => (
@@ -65,7 +63,7 @@ const Footer = () => (
           <ul className="space-y-4 text-sm text-gray-400">
             {servicesLinks.map((service) => (
               <li key={service.name}>
-                <a href={service.href} className="hover:text-[#426369] transition-colors">
+                <a href={`/service/${service.name}`} className="hover:text-[#426369] transition-colors">
                   {service.name}
                 </a>
               </li>
