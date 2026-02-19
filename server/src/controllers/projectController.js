@@ -1,8 +1,29 @@
 import { projectModel } from "../models/projectModel.js";
+import { uploadImage } from "../utils/cloudinary.js";
 
 export const createProject = async (req, res) => {
   try {
-    const project = await projectModel.create(req.body);
+    const data = { ...req.body };
+
+    if (req.files?.mainImage) {
+      const result = await uploadImage(req.files.mainImage[0].buffer);
+      data.mainImage = result.secure_url;
+    }
+
+    if (req.files?.galleryImages) {
+      const uploadPromises = req.files.galleryImages.map(file => uploadImage(file.buffer));
+      const results = await Promise.all(uploadPromises);
+      data.galleryImages = results.map(r => r.secure_url);
+    }
+
+    if (data.tech) {
+      try {
+        data.tech = JSON.parse(data.tech);
+      } catch (e) {
+        data.tech = data.tech.split(',').map(t => t.trim());
+      }
+    }
+    const project = await projectModel.create(data);
     res.status(201).json({
       success: true,
       data: project,
@@ -82,7 +103,27 @@ export const getProjectsByService = async (req, res) => {
 
 export const updateProject = async (req, res) => {
   try {
-    const updated = await projectModel.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  const data = { ...req.body };
+
+    if (req.files?.mainImage) {
+      const result = await uploadImage(req.files.mainImage[0].buffer);
+      data.mainImage = result.secure_url;
+    }
+
+    if (req.files?.galleryImages) {
+      const uploadPromises = req.files.galleryImages.map(file => uploadImage(file.buffer));
+      const results = await Promise.all(uploadPromises);
+      data.galleryImages = results.map(r => r.secure_url);
+    }
+
+    if (data.tech) {
+      try {
+        data.tech = JSON.parse(data.tech);
+      } catch (e) {
+        data.tech = data.tech.split(',').map(t => t.trim());
+      }
+    }
+    const updated = await projectModel.findByIdAndUpdate(req.params.id, data, { new: true });
     res.status(200).json({ success: true, data: updated });
   } catch (error) {
     res.status(500).json({ success: false, message: "Update project failed" });

@@ -1,8 +1,14 @@
 import {clientModel} from "../models/clientModel.js";
+import { uploadImage } from "../utils/cloudinary.js";
 
 export const createClient = async (req, res) => {
   try {
-    const client = await clientModel.create(req.body);
+    const data = { ...req.body };
+    if (req.file) {
+      const result = await uploadImage(req.file.buffer);
+      data.logo = result.secure_url;
+    }
+    const client = await clientModel.create(data);
     res.status(201).json({
       success: true,
       data: client,
@@ -34,7 +40,14 @@ export const getClients = async (req, res) => {
 
 export const updateClient = async (req, res) => {
   try {
-    const updated = await clientModel.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updateData = { ...req.body };
+
+    if (req.file) {
+      const result = await uploadImage(req.file.buffer);
+      updateData.logo = result.secure_url;
+    }
+
+    const updated = await clientModel.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.status(200).json({ success: true, data: updated });
   } catch (error) {
     res.status(500).json({ success: false, message: "Update client failed", error: error.message });

@@ -1,8 +1,14 @@
 import {testimonialModel} from "../models/testimonialModel.js";
+import { uploadImage } from "../utils/cloudinary.js";
 
 export const createTestimonial = async (req, res) => {
   try {
-    const testimonial = await testimonialModel.create(req.body);
+    const data = { ...req.body };
+    if (req.file) {
+      const result = await uploadImage(req.file.buffer);
+      data.avatar = result.secure_url;
+    }
+    const testimonial = await testimonialModel.create(data);
     res.status(201).json({
       success: true,
       data: testimonial,
@@ -34,9 +40,16 @@ export const getTestimonials = async (req, res) => {
 
 export const updateTestimonial = async (req, res) => {
   try {
+    const updateData = { ...req.body };
+
+    if (req.file) {
+      const result = await uploadImage(req.file.buffer);
+      updateData.avatar = result.secure_url;
+    }
+
     const testimonial = await testimonialModel.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true }
     );
     res.status(200).json({ success: true, data: testimonial });

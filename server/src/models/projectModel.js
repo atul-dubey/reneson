@@ -7,7 +7,8 @@ const projectSchema = new mongoose.Schema(
     serviceType: {type: String, required:true,enum: ['IoT & Hardware','Software Development','Artificial Intelligence','Training']} ,
     tech: [{ type: String }],
     isFeatured: {type: Boolean,default: false},
-    image: { type: String, required: true },
+    mainImage: {type: String,required: true},
+    galleryImages: [{type: String,},],
   },
   { timestamps: true }
 );
