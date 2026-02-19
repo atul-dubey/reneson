@@ -1,4 +1,4 @@
-const ProjectCard = ({ title, description, tech, image, serviceType }) => (
+const ProjectCard = ({ title, description, tech, mainImage, serviceType }) => (
   <div className="group bg-white rounded-[1.5rem] overflow-hidden border border-gray-100 hover:border-[#426369]/20 transition-all duration-500 shadow-sm hover:shadow-xl hover:shadow-[#426369]/5">
     
     {/* 1. Image Container with Floating Service Tag */}
@@ -11,7 +11,7 @@ const ProjectCard = ({ title, description, tech, image, serviceType }) => (
       </div>
 
       <img 
-        src={image} 
+        src={mainImage} 
         alt={title} 
         className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-in-out scale-100 group-hover:scale-110"
       />

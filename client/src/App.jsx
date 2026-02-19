@@ -13,6 +13,7 @@ import { adminConfigs } from './admin/config/data.js'
 import CRUDPage from './admin/pages/CRUDPage.jsx'
 import AdminLogin from './admin/pages/AdminLogin.jsx'
 import AdminLayout from './admin/pages/AdminLayout.jsx'
+import ProjectDetail from './pages/ProjectDetail.jsx'
 
 function App() {
 
@@ -31,6 +32,7 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/portfolio" element={<Portfolio />} />
               <Route path="/service/:serviceName" element={<ServiceDetail />} />
+              <Route path="/check"  element={<ProjectDetail/>}/>
             </Routes>
             <Footer />
           </>

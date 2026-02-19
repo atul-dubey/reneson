@@ -3,14 +3,16 @@ export const adminConfigs = {
     title: "Projects",
     module: "projects",
     fields: [
-      { name: 'title', label: 'Project Title', type: 'text' },
+      { name: 'title', label: 'Project Title', type: 'text', required: true },
       { name: 'serviceType', label: 'Service Category', type: 'select', 
-        options: ['IoT & Hardware', 'Software Development', 'Artificial Intelligence', 'Training'] 
+        options: ['IoT & Hardware', 'Software Development', 'Artificial Intelligence', 'Training'],
+        required: true 
       },
-      { name: 'description', label: 'Description', type: 'textarea' },
-      { name: 'tech', label: 'Technologies (Comma Separated)', type: 'text' },
-      { name: 'image', label: 'Image URL', type: 'text' },
-      { name: 'isFeatured', label: 'Featured Project', type: 'checkbox' }
+      { name: 'description', label: 'Description', type: 'textarea', required: true },
+      { name: 'tech', label: 'Technologies (Comma Separated)', type: 'text', required: false },
+      { name: 'mainImage', label: 'Main Display Image', type: 'file', required: true },
+      { name: 'galleryImages', label: 'Gallery Images', type: 'file', multiple: true, required: false },
+      { name: 'isFeatured', label: 'Featured Project', type: 'checkbox', required: false }
     ]
   },
 
@@ -18,11 +20,11 @@ export const adminConfigs = {
     title: "Team Members",
     module: "team",
     fields: [
-      { name: 'name', label: 'Full Name', type: 'text' },
-      { name: 'specialty', label: 'Specialty/Role', type: 'text' },
-      { name: 'image', label: 'Profile Image URL', type: 'text' },
-      { name: 'linkedin', label: 'LinkedIn URL', type: 'text' },
-      { name: 'github', label: 'GitHub URL', type: 'text' }
+      { name: 'name', label: 'Full Name', type: 'text', required: true },
+      { name: 'specialty', label: 'Specialty/Role', type: 'text', required: false },
+      { name: 'image', label: 'Profile Image', type: 'file', required: false },
+      { name: 'linkedin', label: 'LinkedIn URL', type: 'text', required: false },
+      { name: 'github', label: 'GitHub URL', type: 'text', required: false }
     ]
   },
 
@@ -30,11 +32,11 @@ export const adminConfigs = {
     title: "Testimonials",
     module: "testimonials",
     fields: [
-      { name: 'name', label: 'Client Name', type: 'text' },
-      { name: 'role', label: 'Designation/Role', type: 'text' },
-      { name: 'text', label: 'Testimonial Text', type: 'textarea' },
-      { name: 'avatar', label: 'Avatar URL', type: 'text' },
-      { name: 'star', label: 'Rating (1-5)', type: 'number' }
+      { name: 'name', label: 'Client Name', type: 'text', required: true },
+      { name: 'role', label: 'Designation/Role', type: 'text', required: false },
+      { name: 'text', label: 'Testimonial Text', type: 'textarea', required: true },
+      { name: 'avatar', label: 'Avatar Image', type: 'file', required: false },
+      { name: 'star', label: 'Rating (1-5)', type: 'number', required: false }
     ]
   },
 
@@ -42,28 +44,17 @@ export const adminConfigs = {
     title: "Our Clients",
     module: "clients",
     fields: [
-      { name: 'name', label: 'Client Name', type: 'text' },
-      { name: 'logo', label: 'Logo URL', type: 'text' }
+      { name: 'name', label: 'Client Name', type: 'text', required: true },
+      { name: 'logo', label: 'Logo Image', type: 'file', required: true }
     ]
   },
 
   stats: {
-    title: "Company Statistics",
+    title: "Statistics",
     module: "stats",
     fields: [
-      { name: 'label', label: 'Stat Label (e.g. Projects Done)', type: 'text' },
-      { name: 'value', label: 'Numeric Value', type: 'number' }
+      { name: 'label', label: 'Stat Label', type: 'text', required: true },
+      { name: 'value', label: 'Numeric Value', type: 'number', required: true }
     ]
-  },
-
-  contacts: {
-    title: "Inquiries & Messages",
-    module: "", // Usually just /api/all-contacts based on your routes
-    fields: [
-      { name: 'name', label: 'Sender', type: 'text' },
-      { name: 'email', label: 'Email', type: 'text' },
-      { name: 'message', label: 'Message', type: 'textarea' }
-    ],
-    readOnly: true // Custom flag if you want to disable "Create" for contacts
   }
 };
