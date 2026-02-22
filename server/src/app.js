@@ -7,6 +7,7 @@ import { clientRoutes } from './routes/clientRoutes.js';
 import { teamRoutes } from './routes/teamRoutes.js';
 import { contactRoutes } from './routes/contactRoutes.js';
 import { adminLogin } from './controllers/adminAuthController.js';
+import { phaseRoutes } from './routes/phaseRoutes.js';
 
 const app=express();
 
@@ -24,5 +25,6 @@ app.use("/api/clients", clientRoutes);
 app.use("/api/team", teamRoutes);
 app.use("/api",contactRoutes);
 app.use('/api/login',adminLogin);
+app.use('/api/phase',phaseRoutes);
 
 export {app};

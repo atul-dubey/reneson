@@ -9,6 +9,7 @@ const projectSchema = new mongoose.Schema(
     isFeatured: {type: Boolean,default: false},
     mainImage: {type: String,required: true},
     galleryImages: [{type: String,},],
+    phaseCodes: [{type: String,},]
   },
   { timestamps: true }
 );

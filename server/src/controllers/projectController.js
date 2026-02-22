@@ -1,3 +1,4 @@
+import { PhaseModel } from "../models/phaseModel.js";
 import { projectModel } from "../models/projectModel.js";
 import { uploadImage } from "../utils/cloudinary.js";
 
@@ -136,5 +137,42 @@ export const deleteProject = async (req, res) => {
     res.status(200).json({ success: true, message: "Project deleted" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Delete project failed" });
+  }
+};
+
+export const getProjectByIdWithDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const project = await projectModel.findById(id).lean();
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found",
+      });
+    }
+
+    let phases = [];
+    if (project.phaseCodes && project.phaseCodes.length > 0) {
+      phases = await PhaseModel.find({
+        phaseCode: { $in: project.phaseCodes },
+        projectId: project._id,
+      }).sort({ order: 1 });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        ...project,
+        phases,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch project details",
+      error: error.message,
+    });
   }
 };
