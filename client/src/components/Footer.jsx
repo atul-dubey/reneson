@@ -1,4 +1,4 @@
-import { Linkedin, Twitter, Mail, Instagram, MapPin, Phone } from 'lucide-react';
+import { Linkedin, Mail, MapPin, Phone } from 'lucide-react';
 import reneson from '/reneson.png'
 
 const quickLinks = [
@@ -31,14 +31,8 @@ const Footer = () => (
             Premier tech agency specializing in high-performance digital products and intelligent IoT ecosystems.
           </p>
           <div className="flex gap-4">
-            <a href="#" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-[#426369] group transition-all">
+            <a href="https://www.linkedin.com/company/renesonllp" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-[#426369] group transition-all">
               <Linkedin className="w-5 h-5 text-gray-600 group-hover:text-white" />
-            </a>
-            <a href="#" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-[#426369] group transition-all">
-              <Twitter className="w-5 h-5 text-gray-600 group-hover:text-white" />
-            </a>
-            <a href="#" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-[#426369] group transition-all">
-              <Instagram className="w-5 h-5 text-gray-600 group-hover:text-white" />
             </a>
           </div>
         </div>
@@ -77,11 +71,11 @@ const Footer = () => (
           <ul className="space-y-4 text-sm text-gray-400">
             <li className="flex gap-3 items-start">
               <MapPin className="w-4 h-4 text-[#426369] mt-1 shrink-0" />
-              <span>Sector-35, Noida, Uttar Pradesh India - 201301</span>
+              <span>Gurugram (Delhi-NCR), Haryana, India - 122007</span>
             </li>
             <li className="flex gap-3 items-center">
               <Mail className="w-4 h-4 text-[#426369] shrink-0" />
-              <a href="mailto:hello@reneson.tech" className="hover:text-[#426369] transition-colors">info@reneson.com</a>
+              <a href="mailto:renesontech@gmail.com" className="hover:text-[#426369] transition-colors">renesontech@gmail.com</a>
             </li>
             <li className="flex gap-3 items-center">
               <Phone className="w-4 h-4 text-[#426369] shrink-0" />
