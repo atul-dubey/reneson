@@ -24,7 +24,17 @@ function App() {
 
   return (
     <>
-      <Toaster/>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 5000,
+          style: { borderRadius: '1rem', fontWeight: '700', fontSize: '0.8rem' },
+          error: {
+            style: { background: '#fff1f2', color: '#be123c', border: '1px solid #fecdd3' },
+            iconTheme: { primary: '#be123c', secondary: '#fff1f2' },
+          },
+        }}
+      />
       <ScrollToTop/>
       {showScheduler && <GoogleCalender/>}
       <Routes>

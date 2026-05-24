@@ -6,7 +6,6 @@ const phaseSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      uppercase: true,
       trim: true,
     },
     title: {

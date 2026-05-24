@@ -1,14 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAdmin } from '../context/AdminContext';
-import { Trash2, Edit, Plus, X, Save, Loader2, Image as ImageIcon, UploadCloud, PlusCircle, MinusCircle } from 'lucide-react';
+import { Trash2, Edit, Plus, X, Save, Loader2, UploadCloud, PlusCircle, MinusCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
+
+// Helper: safely parse a value that might be a JSON-stringified array
+const parseArrayField = (value) => {
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (_) {}
+  }
+  return [];
+};
 
 const CRUDPage = ({ title, module, fields, readOnly = false }) => {
   const [items, setItems] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({});
-  const [previews, setPreviews] = useState({});
+  // For multi-file fields: existing saved URLs (strings) — kept when editing
+  const [existingImages, setExistingImages] = useState({}); // { fieldName: [url, ...] }
+  // For multi-file fields: newly selected File objects to upload
+  const [newFiles, setNewFiles] = useState({}); // { fieldName: [File, ...] }
+  // For single-file fields: preview URL
+  const [singlePreviews, setSinglePreviews] = useState({}); // { fieldName: objectUrl | savedUrl }
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const { token } = useAdmin();
@@ -25,36 +43,62 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
 
   useEffect(() => { fetchData(); }, [module]);
 
+  const resetFileStates = () => {
+    setExistingImages({});
+    setNewFiles({});
+    setSinglePreviews({});
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
     if (type === 'file') {
-      if (e.target.multiple) {
-        const fileArray = Array.from(files);
-        setFormData({ ...formData, [name]: fileArray });
-        setPreviews({ ...previews, [name]: fileArray.map(file => URL.createObjectURL(file)) });
+      const fieldConfig = fields.find(f => f.name === name);
+      if (fieldConfig?.multiple) {
+        // Append new files to existing new-file list
+        const incoming = Array.from(files);
+        setNewFiles(prev => ({
+          ...prev,
+          [name]: [...(prev[name] || []), ...incoming],
+        }));
       } else {
         const file = files[0];
-        setFormData({ ...formData, [name]: file });
-        setPreviews({ ...previews, [name]: URL.createObjectURL(file) });
+        setFormData(prev => ({ ...prev, [name]: file }));
+        setSinglePreviews(prev => ({ ...prev, [name]: URL.createObjectURL(file) }));
       }
     } else {
-      setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
+      setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     }
   };
 
   const handleArrayChange = (fieldName, index, value) => {
     const newArray = [...(formData[fieldName] || [])];
     newArray[index] = value;
-    setFormData({ ...formData, [fieldName]: newArray });
+    setFormData(prev => ({ ...prev, [fieldName]: newArray }));
   };
 
   const addArrayItem = (fieldName) => {
-    setFormData({ ...formData, [fieldName]: [...(formData[fieldName] || []), ""] });
+    setFormData(prev => ({ ...prev, [fieldName]: [...(prev[fieldName] || []), ""] }));
   };
 
   const removeArrayItem = (fieldName, index) => {
     const newArray = (formData[fieldName] || []).filter((_, i) => i !== index);
-    setFormData({ ...formData, [fieldName]: newArray });
+    setFormData(prev => ({ ...prev, [fieldName]: newArray }));
+  };
+
+  // Remove an image from the existing saved images list
+  const removeExistingImage = (fieldName, index) => {
+    setExistingImages(prev => ({
+      ...prev,
+      [fieldName]: (prev[fieldName] || []).filter((_, i) => i !== index),
+    }));
+  };
+
+  // Remove a newly added file from the new-files list
+  const removeNewFile = (fieldName, index) => {
+    setNewFiles(prev => ({
+      ...prev,
+      [fieldName]: (prev[fieldName] || []).filter((_, i) => i !== index),
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -62,14 +106,14 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
     setSubmitting(true);
     try {
       const data = new FormData();
-      
+
       Object.keys(formData).forEach(key => {
         const fieldConfig = fields.find(f => f.name === key);
         const value = formData[key];
 
         if (fieldConfig?.type === 'file') {
-          if (Array.isArray(value)) {
-            value.forEach(file => { if (file instanceof File) data.append(key, file); });
+          if (fieldConfig.multiple) {
+            // Handled separately below
           } else {
             if (value instanceof File) data.append(key, value);
           }
@@ -80,25 +124,60 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
         }
       });
 
+      // Handle multi-file fields
+      fields.filter(f => f.type === 'file' && f.multiple).forEach(f => {
+        const existing = existingImages[f.name] || [];
+        const newF = newFiles[f.name] || [];
+        // Send existing URLs to backend so it can merge
+        data.append(`existingImages_${f.name}`, JSON.stringify(existing));
+        // Send new files
+        newF.forEach(file => data.append(f.name, file));
+      });
+
       const config = { headers: { Authorization: token, 'Content-Type': 'multipart/form-data' } };
       if (editingId) await axios.put(`${API_URL}/${editingId}`, data, config);
       else await axios.post(`${API_URL}/create`, data, config);
 
       setIsModalOpen(false);
       setFormData({});
-      setPreviews({});
+      resetFileStates();
       setEditingId(null);
       fetchData();
-    } catch (err) { 
-        console.error(err);
-        alert("Save failed: " + (err.response?.data?.message || err.message)); 
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || err.message || 'Save failed. Please try again.');
     } finally { setSubmitting(false); }
   };
 
   const startEdit = (item) => {
     setEditingId(item._id);
-    setFormData({ ...item }); 
-    setPreviews({});
+
+    // Normalize the item: parse any JSON-stringified array fields back into arrays
+    const normalized = { ...item };
+    fields.forEach(f => {
+      if (f.type === 'array') {
+        normalized[f.name] = parseArrayField(normalized[f.name]);
+      }
+    });
+
+    setFormData(normalized);
+
+    // Pre-populate existingImages for multi-file fields
+    const existing = {};
+    fields.filter(f => f.type === 'file' && f.multiple).forEach(f => {
+      const val = item[f.name];
+      existing[f.name] = Array.isArray(val) ? val : [];
+    });
+    setExistingImages(existing);
+
+    // Pre-populate singlePreviews for single-file fields
+    const singles = {};
+    fields.filter(f => f.type === 'file' && !f.multiple).forEach(f => {
+      if (item[f.name]) singles[f.name] = item[f.name];
+    });
+    setSinglePreviews(singles);
+
+    setNewFiles({});
     setIsModalOpen(true);
   };
 
@@ -118,7 +197,7 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
           <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">{title}</h1>
         </div>
         {!readOnly && (
-          <button onClick={() => { setEditingId(null); setFormData({}); setPreviews({}); setIsModalOpen(true); }}
+          <button onClick={() => { setEditingId(null); setFormData({}); resetFileStates(); setIsModalOpen(true); }}
             className="bg-[#426369] text-white px-6 py-3 rounded-2xl font-bold text-xs uppercase flex items-center gap-2 cursor-pointer transition-transform hover:scale-105">
             <Plus size={16} /> New {title.slice(0, -1)}
           </button>
@@ -152,9 +231,9 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
                             />
                           </div>
                         ) : f.type === 'array' ? (
-                            <span className="text-[10px] bg-slate-100 px-2 py-1 rounded-md">
-                                {Array.isArray(item[f.name]) ? `${item[f.name].length} items` : '0 items'}
-                            </span>
+                          <span className="text-[10px] bg-slate-100 px-2 py-1 rounded-md">
+                            {Array.isArray(item[f.name]) ? `${item[f.name].length} items` : '0 items'}
+                          </span>
                         ) : (
                           <span className="truncate max-w-[150px] block">
                             {typeof item[f.name] === 'boolean' ? (item[f.name] ? 'Yes' : 'No') : String(item[f.name] || '—')}
@@ -179,7 +258,7 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
           <div className="bg-white rounded-[2.5rem] w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-8 border-b border-slate-50 flex justify-between items-center">
               <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">{editingId ? 'Edit' : 'Create'} {title.slice(0, -1)}</h3>
-              <button onClick={() => setIsModalOpen(false)} className="p-2 bg-slate-50 rounded-full text-slate-400 hover:bg-slate-100 transition-colors cursor-pointer"><X size={20} /></button>
+              <button onClick={() => { setIsModalOpen(false); resetFileStates(); }} className="p-2 bg-slate-50 rounded-full text-slate-400 hover:bg-slate-100 transition-colors cursor-pointer"><X size={20} /></button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[75vh] overflow-y-auto custom-scrollbar">
@@ -191,6 +270,7 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
 
                   {f.type === 'file' ? (
                     <div className="space-y-4">
+                      {/* Drop zone */}
                       <div className="relative border-2 border-dashed border-slate-200 rounded-2xl p-6 bg-slate-50 hover:bg-slate-100/50 transition-all text-center">
                         <input
                           type="file"
@@ -202,19 +282,55 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
                           className="absolute inset-0 opacity-0 cursor-pointer z-10"
                         />
                         <UploadCloud className="mx-auto text-slate-300 mb-2" size={32} />
-                        <p className="text-[10px] font-black uppercase text-slate-400">Click to upload {f.label}</p>
+                        <p className="text-[10px] font-black uppercase text-slate-400">
+                          {f.multiple ? 'Click to add images' : `Click to upload ${f.label}`}
+                        </p>
                       </div>
 
-                      {(previews[f.name] || formData[f.name]) && (
-                        <div className="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                          {f.multiple ? (
-                            (previews[f.name] || (Array.isArray(formData[f.name]) ? formData[f.name] : [])).map((url, i) => (
-                              <img key={i} src={typeof url === 'string' ? url : URL.createObjectURL(url)} className="w-16 h-16 object-cover rounded-xl border border-white shadow-sm" />
-                            ))
-                          ) : (
-                            <img src={previews[f.name] || formData[f.name]} className="w-20 h-20 object-cover rounded-xl shadow-md border-2 border-white" />
-                          )}
-                        </div>
+                      {f.multiple ? (
+                        /* Multi-image preview with per-image delete */
+                        (() => {
+                          const existing = existingImages[f.name] || [];
+                          const newF = newFiles[f.name] || [];
+                          if (existing.length === 0 && newF.length === 0) return null;
+                          return (
+                            <div className="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                              {/* Existing saved images */}
+                              {existing.map((url, i) => (
+                                <div key={`ex-${i}`} className="relative group/img">
+                                  <img src={url} className="w-16 h-16 object-cover rounded-xl border border-white shadow-sm" alt="" />
+                                  <button
+                                    type="button"
+                                    onClick={() => removeExistingImage(f.name, i)}
+                                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity shadow-md hover:bg-red-600 cursor-pointer"
+                                  >
+                                    <X size={10} />
+                                  </button>
+                                </div>
+                              ))}
+                              {/* Newly added file previews */}
+                              {newF.map((file, i) => (
+                                <div key={`new-${i}`} className="relative group/img">
+                                  <img src={URL.createObjectURL(file)} className="w-16 h-16 object-cover rounded-xl border-2 border-[#426369]/40 shadow-sm" alt="" />
+                                  <button
+                                    type="button"
+                                    onClick={() => removeNewFile(f.name, i)}
+                                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity shadow-md hover:bg-red-600 cursor-pointer"
+                                  >
+                                    <X size={10} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()
+                      ) : (
+                        /* Single image preview */
+                        singlePreviews[f.name] && (
+                          <div className="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                            <img src={singlePreviews[f.name]} className="w-20 h-20 object-cover rounded-xl shadow-md border-2 border-white" alt="" />
+                          </div>
+                        )
                       )}
                     </div>
                   ) : f.type === 'array' ? (

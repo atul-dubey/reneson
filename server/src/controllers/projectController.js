@@ -18,11 +18,10 @@ export const createProject = async (req, res) => {
     }
 
     if (data.tech) {
-      try {
-        data.tech = JSON.parse(data.tech);
-      } catch (e) {
-        data.tech = data.tech.split(',').map(t => t.trim());
-      }
+      try { data.tech = JSON.parse(data.tech); } catch (e) { data.tech = data.tech.split(',').map(t => t.trim()); }
+    }
+    if (data.phaseCodes) {
+      try { data.phaseCodes = JSON.parse(data.phaseCodes); } catch (e) {}
     }
     const project = await projectModel.create(data);
     res.status(201).json({
@@ -104,26 +103,35 @@ export const getProjectsByService = async (req, res) => {
 
 export const updateProject = async (req, res) => {
   try {
-  const data = { ...req.body };
+    const data = { ...req.body };
 
     if (req.files?.mainImage) {
       const result = await uploadImage(req.files.mainImage[0].buffer);
       data.mainImage = result.secure_url;
     }
 
+    // Merge existing gallery URLs (sent from frontend) with newly uploaded ones
+    let existingGallery = [];
+    if (data.existingImages_galleryImages) {
+      try { existingGallery = JSON.parse(data.existingImages_galleryImages); } catch (e) {}
+      delete data.existingImages_galleryImages;
+    }
     if (req.files?.galleryImages) {
       const uploadPromises = req.files.galleryImages.map(file => uploadImage(file.buffer));
       const results = await Promise.all(uploadPromises);
-      data.galleryImages = results.map(r => r.secure_url);
+      data.galleryImages = [...existingGallery, ...results.map(r => r.secure_url)];
+    } else {
+      // No new files — keep only the existing ones that weren't deleted
+      data.galleryImages = existingGallery;
     }
 
     if (data.tech) {
-      try {
-        data.tech = JSON.parse(data.tech);
-      } catch (e) {
-        data.tech = data.tech.split(',').map(t => t.trim());
-      }
+      try { data.tech = JSON.parse(data.tech); } catch (e) { data.tech = data.tech.split(',').map(t => t.trim()); }
     }
+    if (data.phaseCodes) {
+      try { data.phaseCodes = JSON.parse(data.phaseCodes); } catch (e) {}
+    }
+
     const updated = await projectModel.findByIdAndUpdate(req.params.id, data, { new: true });
     res.status(200).json({ success: true, data: updated });
   } catch (error) {
@@ -157,7 +165,6 @@ export const getProjectByIdWithDetails = async (req, res) => {
     if (project.phaseCodes && project.phaseCodes.length > 0) {
       phases = await PhaseModel.find({
         phaseCode: { $in: project.phaseCodes },
-        projectId: project._id,
       }).sort({ order: 1 });
     }
 

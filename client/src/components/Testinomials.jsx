@@ -83,31 +83,34 @@ const Testimonials = () => {
               className="flex transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
               style={{ transform: `translateX(-${currentIndex * (100 / itemsPerPage)}%)` }}
             >
-              {testimonials.map((t, i) => (
+          {testimonials.map((t, i) => (
                 <div
                   key={i}
                   className="flex-shrink-0 px-4 transition-all duration-300"
                   style={{ width: `${100 / itemsPerPage}%` }}
                 >
-                  <div className="bg-white p-8 h-full rounded-[2rem] border border-gray-100 shadow-sm flex flex-col justify-between transition-all hover:shadow-xl hover:-translate-y-1">
-                    <div className="space-y-6">
+                  <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col justify-between transition-all hover:shadow-xl hover:-translate-y-1 h-full">
+                    {/* Content Section - Fixed Height to Prevent Growing */}
+                    <div className="space-y-4 flex-1 flex flex-col">
                       <RatingStars rating={t.star} />
-                      <p className="text-gray-600 italic text-lg leading-relaxed">
+                      {/* Text with Line Clamp - Industry Standard */}
+                      <p className="text-gray-600 italic text-base leading-relaxed line-clamp-5 flex-1">
                         "{t.text}"
                       </p>
                     </div>
 
-                    <div className="mt-8 pt-8 border-t border-gray-50 flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center overflow-hidden border border-teal-100">
+                    {/* Divider and Author Section - Always at Bottom */}
+                    <div className="mt-6 pt-6 border-t border-gray-50 flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center overflow-hidden border border-teal-100 flex-shrink-0">
                         {t.avatar ? (
                           <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
                         ) : (
-                          <User className="w-6 h-6 text-[#426369]" />
+                          <User className="w-5 h-5 text-[#426369]" />
                         )}
                       </div>
-                      <div>
-                        <h6 className="font-bold text-gray-900 text-sm">{t.name}</h6>
-                        <p className="text-[#426369] font-medium text-xs">{t.role}</p>
+                      <div className="min-w-0">
+                        <h6 className="font-bold text-gray-900 text-sm truncate">{t.name}</h6>
+                        <p className="text-[#426369] font-medium text-xs truncate">{t.role}</p>
                       </div>
                     </div>
                   </div>

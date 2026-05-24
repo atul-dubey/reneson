@@ -6,11 +6,13 @@ export const createPhase = async (req, res) => {
     const data = { ...req.body };
 
     if (req.files?.images) {
-      const uploadPromises = req.files.images.map(file =>
-        uploadImage(file.buffer)
-      );
+      const uploadPromises = req.files.images.map(file => uploadImage(file.buffer));
       const results = await Promise.all(uploadPromises);
       data.images = results.map(r => r.secure_url);
+    }
+
+    if (data.summary) {
+      try { data.summary = JSON.parse(data.summary); } catch (e) {}
     }
 
     const phase = await PhaseModel.create(data);
@@ -20,6 +22,12 @@ export const createPhase = async (req, res) => {
       data: phase,
     });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: `Phase code "${error.keyValue?.phaseCode}" already exists. Each phase must have a unique code.`,
+      });
+    }
     res.status(500).json({
       success: false,
       message: "Failed to create phase",
@@ -71,12 +79,22 @@ export const updatePhase = async (req, res) => {
   try {
     const data = { ...req.body };
 
+    // Merge existing image URLs (sent from frontend) with newly uploaded ones
+    let existingImgs = [];
+    if (data.existingImages_images) {
+      try { existingImgs = JSON.parse(data.existingImages_images); } catch (e) {}
+      delete data.existingImages_images;
+    }
     if (req.files?.images) {
-      const uploadPromises = req.files.images.map(file =>
-        uploadImage(file.buffer)
-      );
+      const uploadPromises = req.files.images.map(file => uploadImage(file.buffer));
       const results = await Promise.all(uploadPromises);
-      data.images = results.map(r => r.secure_url);
+      data.images = [...existingImgs, ...results.map(r => r.secure_url)];
+    } else {
+      data.images = existingImgs;
+    }
+
+    if (data.summary) {
+      try { data.summary = JSON.parse(data.summary); } catch (e) {}
     }
 
     const updated = await PhaseModel.findByIdAndUpdate(
@@ -90,9 +108,16 @@ export const updatePhase = async (req, res) => {
       data: updated,
     });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: `Phase code "${error.keyValue?.phaseCode}" already exists. Each phase must have a unique code.`,
+      });
+    }
     res.status(500).json({
       success: false,
       message: "Update phase failed",
+      error: error.message,
     });
   }
 };
