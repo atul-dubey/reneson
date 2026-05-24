@@ -3,7 +3,7 @@ import { useData } from '../context/DataContext';
 
 
 const ClientStrip = () => {
-  const {clients}=useData();
+  const { clients, loading } = useData();
   const [shouldScroll, setShouldScroll] = useState(false);
   
   useEffect(() => {
@@ -24,6 +24,8 @@ const ClientStrip = () => {
     return () => window.removeEventListener('resize', checkShouldScroll);
   }, [clients.length]);
   
+  if (!loading && (!clients || clients.length === 0)) return null;
+
   const displayClients = shouldScroll ? [...clients, ...clients] : clients;
 
   return (
@@ -34,14 +36,20 @@ const ClientStrip = () => {
         </p>
       </div>
 
-      {shouldScroll ? (
+      {loading ? (
+        <div className="flex justify-center items-center gap-8 sm:gap-12 overflow-hidden px-6">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={`skel-${i}`} className="h-12 w-24 sm:w-32 bg-gray-200 rounded-lg animate-pulse flex-shrink-0"></div>
+          ))}
+        </div>
+      ) : shouldScroll ? (
         // Marquee/Scroll effect for many clients
         <div className="relative flex overflow-hidden group">
           <div className="animate-marquee whitespace-nowrap flex items-center">
             {displayClients.map((client, i) => (
               <div 
                 key={i} 
-                className="flex items-center justify-center px-8 sm:px-12 transition-all duration-300 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 flex-shrink-0"
+                className="flex items-center justify-center px-8 sm:px-12 transition-all duration-300 flex-shrink-0"
               >
                 <img 
                   src={client.logo} 
@@ -58,7 +66,7 @@ const ClientStrip = () => {
           {clients.map((client, i) => (
             <div 
               key={i} 
-              className="transition-all duration-300 grayscale opacity-60 hover:grayscale-0 hover:opacity-100"
+              className="transition-all duration-300"
             >
               <img 
                 src={client.logo} 

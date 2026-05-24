@@ -17,7 +17,7 @@ const RatingStars = ({ rating }) => {
 };
 
 const Testimonials = () => {
-  const { testimonials } = useData();
+  const { testimonials, loading } = useData();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
 
@@ -36,6 +36,8 @@ const Testimonials = () => {
 
   const prevSlide = () => setCurrentIndex((prev) => (prev <= 0 ? 0 : prev - 1));
   const nextSlide = () => setCurrentIndex((prev) => (prev >= maxIndex ? maxIndex : prev + 1));
+
+  if (!loading && (!testimonials || testimonials.length === 0)) return null;
 
   return (
     <section className="py-24 bg-gray-50/50 overflow-hidden">
@@ -83,7 +85,38 @@ const Testimonials = () => {
               className="flex transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
               style={{ transform: `translateX(-${currentIndex * (100 / itemsPerPage)}%)` }}
             >
-          {testimonials.map((t, i) => (
+          {loading ? (
+            Array.from({ length: itemsPerPage }).map((_, i) => (
+              <div
+                key={`skel-${i}`}
+                className="flex-shrink-0 px-4 transition-all duration-300"
+                style={{ width: `${100 / itemsPerPage}%` }}
+              >
+                <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col transition-all h-full min-h-[250px] animate-pulse">
+                  <div className="space-y-4 flex-1 flex flex-col">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <div key={s} className="w-4 h-4 bg-gray-200 rounded-full"></div>
+                      ))}
+                    </div>
+                    <div className="space-y-2 mt-4">
+                      <div className="h-4 bg-gray-200 rounded w-full"></div>
+                      <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                      <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+                    </div>
+                  </div>
+                  <div className="mt-6 pt-6 border-t border-gray-50 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0"></div>
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+                      <div className="h-2 bg-gray-200 rounded w-1/4"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            testimonials.map((t, i) => (
                 <div
                   key={i}
                   className="flex-shrink-0 px-4 transition-all duration-300"
@@ -115,7 +148,8 @@ const Testimonials = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
+          )}
             </div>
           </div>
           

@@ -4,8 +4,7 @@ import ProjectCard from './ProjectCard';
 
 
 export default function SelectedWork() {
-
-    const {projects}=useData();
+    const { projects, loading } = useData();
 
   return (
     <section id="portfolio" className="py-30 bg-gray-50/40">
@@ -24,12 +23,35 @@ export default function SelectedWork() {
           </p>
         </div>
 
-        {/* Projects Grid (Max 3 Projects) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projects.map((project, index) => (
-            <ProjectCard key={index} {...project} />
-          ))}
-        </div>
+        {/* Projects Grid / Skeleton / Empty State */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <div key={`skel-${i}`} className="bg-white rounded-[2rem] border border-gray-100 p-4 h-[400px] flex flex-col animate-pulse">
+                <div className="w-full h-48 bg-gray-200 rounded-2xl mb-4"></div>
+                <div className="space-y-3 flex-1">
+                  <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-full"></div>
+                  <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <div className="w-16 h-6 bg-gray-200 rounded-full"></div>
+                  <div className="w-16 h-6 bg-gray-200 rounded-full"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : !projects || projects.length === 0 ? (
+          <div className="text-center py-20 bg-gray-50 rounded-[2rem] border-2 border-dashed border-gray-200">
+             <p className="text-gray-400 font-medium">Projects will be updated soon.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {projects.slice(0, 3).map((project, index) => (
+              <ProjectCard key={index} {...project} />
+            ))}
+          </div>
+        )}
 
       </div>
     </section>

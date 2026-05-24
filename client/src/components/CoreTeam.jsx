@@ -83,11 +83,29 @@ export default function CoreTeam() {
         </div>
 
         {/* FLEX LAYOUT — PERFECT CENTERING */}
-        <div className="flex flex-wrap justify-center gap-10">
-          {team.map((member, index) => (
-            <TeamCard key={index} {...member} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex flex-wrap justify-center gap-10">
+            {[1, 2, 3].map((i) => (
+              <div key={`skel-${i}`} className="w-full max-w-[300px] group relative overflow-hidden rounded-[1.75rem] bg-white border border-gray-100 p-4 flex flex-col animate-pulse">
+                <div className="aspect-[4/5] bg-gray-200 rounded-2xl mb-4 w-full"></div>
+                <div className="flex flex-col items-center gap-2">
+                  <div className="h-5 bg-gray-200 rounded w-2/3"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : !team || team.length === 0 ? (
+          <div className="text-center py-20 bg-gray-50 rounded-[2rem] border-2 border-dashed border-gray-200 max-w-3xl mx-auto">
+             <p className="text-gray-400 font-medium">Team members will be updated soon.</p>
+          </div>
+        ) : (
+          <div className="flex flex-wrap justify-center gap-10">
+            {team.map((member, index) => (
+              <TeamCard key={index} {...member} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
