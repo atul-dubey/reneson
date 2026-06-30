@@ -1,4 +1,5 @@
 import { useData } from "../context/DataContext";
+import { logEvent } from "../utils/analytics.js";
 
 const ScheduleCall = () => {
   const {setShowScheduler}=useData();
@@ -12,7 +13,7 @@ const ScheduleCall = () => {
       <div className="relative z-10 max-w-2xl mx-auto space-y-8">
         <h2 className="text-4xl lg:text-5xl font-extrabold text-white leading-tight">Ready to build something extraordinary?</h2>
         <p className="text-teal-50/80 text-lg ">Let's discuss your project and how Reneson can help you scale effectively.</p>
-        <button onClick={()=>setShowScheduler(true)} className="bg-white text-[#426369] px-10 py-5 rounded-2xl font-bold hover:bg-teal-50 transition-all text-lg shadow-xl shadow-black/10 cursor-pointer">
+        <button onClick={() => { logEvent('CTA', 'Schedule Free Call Clicked', 'Schedule Free Call'); setShowScheduler(true); }} className="bg-white text-[#426369] px-10 py-5 rounded-2xl font-bold hover:bg-teal-50 transition-all text-lg shadow-xl shadow-black/10 cursor-pointer">
           Schedule Free Call
         </button>
       </div>

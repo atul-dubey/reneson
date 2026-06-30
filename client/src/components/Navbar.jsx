@@ -3,6 +3,7 @@ import reneson from '/reneson.png';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { Menu, X } from 'lucide-react';
+import { logEvent } from '../utils/analytics.js';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -47,6 +48,11 @@ const Navbar = () => {
             <a
               key={item.name}
               href={item.href}
+              onClick={() => {
+                if (item.name === 'About') {
+                  logEvent('Navigation', 'About Button Clicked', 'About');
+                }
+              }}
               className="hover:text-[#426369] transition-colors"
             >
               {item.name}
@@ -81,7 +87,12 @@ const Navbar = () => {
               <a
                 key={item.name}
                 href={item.href}
-                onClick={() => setMenuOpen(false)}
+                onClick={() => {
+                  setMenuOpen(false);
+                  if (item.name === 'About') {
+                    logEvent('Navigation', 'About Button Clicked', 'About');
+                  }
+                }}
                 className="hover:text-[#426369]"
               >
                 {item.name}

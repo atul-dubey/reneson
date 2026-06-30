@@ -10,6 +10,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { servicesData } from '../assets/services.js';
 import { useData } from '../context/DataContext.jsx';
+import { logEvent } from '../utils/analytics.js';
 
 const ServiceDetail = () => {
   const { serviceName } = useParams();
@@ -54,7 +55,7 @@ const ServiceDetail = () => {
               {data.description}
             </p>
             <div className="flex gap-4">
-              <button onClick={() => setShowScheduler(true)} className="bg-[#426369] text-white px-8 py-4 rounded-xl font-bold shadow-xl shadow-[#426369]/20 hover:bg-[#365156] transition-all cursor-pointer">
+              <button onClick={() => { logEvent('CTA', 'Schedule Free Call Clicked', 'Schedule Free Call'); setShowScheduler(true); }} className="bg-[#426369] text-white px-8 py-4 rounded-xl font-bold shadow-xl shadow-[#426369]/20 hover:bg-[#365156] transition-all cursor-pointer">
                 Schedule Free Call
               </button>
               <button onClick={()=>navigate('/portfolio')} className="border border-gray-200 px-8 py-4 rounded-xl font-bold hover:bg-gray-50 transition-all cursor-pointer">

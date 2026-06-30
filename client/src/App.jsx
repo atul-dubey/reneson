@@ -16,8 +16,10 @@ import AdminLayout from './admin/pages/AdminLayout.jsx'
 import ProjectDetail from './pages/ProjectDetail.jsx'
 import ScrollToTop from './components/scrollToTop.jsx'
 import {Toaster} from 'react-hot-toast'
+import { usePageTracking } from './utils/analytics.js'
 
 function App() {
+  usePageTracking();
 
   const {showScheduler}=useData();
   const { isAdmin } = useAdmin()

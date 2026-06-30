@@ -5,6 +5,9 @@ import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
 import { DataProvider } from './context/DataContext.jsx'
 import { AdminProvider } from './admin/context/AdminContext.jsx'
+import { initGA } from './utils/analytics.js'
+
+initGA();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
