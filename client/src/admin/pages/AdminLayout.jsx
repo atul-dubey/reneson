@@ -14,7 +14,6 @@ const menuItems = [
   { name: 'Statistics', path: '/admin/stats', icon: BarChart3 },
   { name: 'Team Members', path: '/admin/team', icon: Users2 },
   { name: 'Testimonials', path: '/admin/testimonials', icon: ShieldCheck },
-  { name: 'Phases', path: '/admin/phase', icon: Activity  },
 //   { name: 'Inquiries', path: '/admin/contacts', icon: MessageSquare },
 ];
 

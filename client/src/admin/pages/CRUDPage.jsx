@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAdmin } from '../context/AdminContext';
-import { Trash2, Edit, Plus, X, Save, Loader2, UploadCloud, PlusCircle, MinusCircle } from 'lucide-react';
+import { Trash2, Edit, Plus, X, Save, Loader2, UploadCloud, PlusCircle, MinusCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 // Helper: safely parse a value that might be a JSON-stringified array
@@ -31,6 +31,85 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
   const [submitting, setSubmitting] = useState(false);
   const { token } = useAdmin();
 
+  const [expandedPhases, setExpandedPhases] = useState({});
+
+  const togglePhaseExpand = (index) => {
+    setExpandedPhases(prev => ({ ...prev, [index]: !prev[index] }));
+  };
+
+  const handlePhaseChange = (index, name, value) => {
+    const updatedPhases = [...(formData.phases || [])];
+    updatedPhases[index] = { ...updatedPhases[index], [name]: value };
+    setFormData(prev => ({ ...prev, phases: updatedPhases }));
+  };
+
+  const handlePhaseArrayChange = (phaseIdx, arrayName, itemIdx, value) => {
+    const updatedPhases = [...(formData.phases || [])];
+    const newArray = [...(updatedPhases[phaseIdx][arrayName] || [])];
+    newArray[itemIdx] = value;
+    updatedPhases[phaseIdx] = { ...updatedPhases[phaseIdx], [arrayName]: newArray };
+    setFormData(prev => ({ ...prev, phases: updatedPhases }));
+  };
+
+  const addPhaseArrayItem = (phaseIdx, arrayName) => {
+    const updatedPhases = [...(formData.phases || [])];
+    const newArray = [...(updatedPhases[phaseIdx][arrayName] || []), ""];
+    updatedPhases[phaseIdx] = { ...updatedPhases[phaseIdx], [arrayName]: newArray };
+    setFormData(prev => ({ ...prev, phases: updatedPhases }));
+  };
+
+  const removePhaseArrayItem = (phaseIdx, arrayName, itemIdx) => {
+    const updatedPhases = [...(formData.phases || [])];
+    const newArray = (updatedPhases[phaseIdx][arrayName] || []).filter((_, i) => i !== itemIdx);
+    updatedPhases[phaseIdx] = { ...updatedPhases[phaseIdx], [arrayName]: newArray };
+    setFormData(prev => ({ ...prev, phases: updatedPhases }));
+  };
+
+  const addPhase = () => {
+    const newPhase = {
+      tempId: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      title: '',
+      summary: [''],
+      images: [],
+      newImages: []
+    };
+    setFormData(prev => ({
+      ...prev,
+      phases: [...(prev.phases || []), newPhase]
+    }));
+    const nextIdx = (formData.phases || []).length;
+    setExpandedPhases(prev => ({ ...prev, [nextIdx]: true }));
+  };
+
+  const removePhase = (index) => {
+    const updatedPhases = (formData.phases || []).filter((_, i) => i !== index);
+    setFormData(prev => ({ ...prev, phases: updatedPhases }));
+  };
+
+  const handlePhaseImagesChange = (phaseIdx, files) => {
+    const updatedPhases = [...(formData.phases || [])];
+    const incoming = Array.from(files);
+    updatedPhases[phaseIdx] = {
+      ...updatedPhases[phaseIdx],
+      newImages: [...(updatedPhases[phaseIdx].newImages || []), ...incoming]
+    };
+    setFormData(prev => ({ ...prev, phases: updatedPhases }));
+  };
+
+  const removePhaseExistingImage = (phaseIdx, imgIdx) => {
+    const updatedPhases = [...(formData.phases || [])];
+    const existingImgs = (updatedPhases[phaseIdx].images || []).filter((_, i) => i !== imgIdx);
+    updatedPhases[phaseIdx] = { ...updatedPhases[phaseIdx], images: existingImgs };
+    setFormData(prev => ({ ...prev, phases: updatedPhases }));
+  };
+
+  const removePhaseNewFile = (phaseIdx, imgIdx) => {
+    const updatedPhases = [...(formData.phases || [])];
+    const newImgs = (updatedPhases[phaseIdx].newImages || []).filter((_, i) => i !== imgIdx);
+    updatedPhases[phaseIdx] = { ...updatedPhases[phaseIdx], newImages: newImgs };
+    setFormData(prev => ({ ...prev, phases: updatedPhases }));
+  };
+
   const API_URL = `${import.meta.env.VITE_BACKEND_URL}/api/${module}`;
 
   const fetchData = async () => {
@@ -47,6 +126,7 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
     setExistingImages({});
     setNewFiles({});
     setSinglePreviews({});
+    setExpandedPhases({});
   };
 
   const handleChange = (e) => {
@@ -111,7 +191,9 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
         const fieldConfig = fields.find(f => f.name === key);
         const value = formData[key];
 
-        if (fieldConfig?.type === 'file') {
+        if (fieldConfig?.type === 'phases') {
+          // Handled separately below
+        } else if (fieldConfig?.type === 'file') {
           if (fieldConfig.multiple) {
             // Handled separately below
           } else {
@@ -124,13 +206,31 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
         }
       });
 
+      // Handle phases field
+      if (formData.phases) {
+        const phasesToSend = formData.phases.map((phase, idx) => {
+          const { newImages, ...rest } = phase;
+          return {
+            ...rest,
+            order: idx
+          };
+        });
+        data.append('phases', JSON.stringify(phasesToSend));
+
+        formData.phases.forEach((phase) => {
+          if (phase.newImages && phase.newImages.length > 0) {
+            phase.newImages.forEach(file => {
+              data.append(`phase_images_${phase._id || phase.tempId}`, file);
+            });
+          }
+        });
+      }
+
       // Handle multi-file fields
       fields.filter(f => f.type === 'file' && f.multiple).forEach(f => {
         const existing = existingImages[f.name] || [];
         const newF = newFiles[f.name] || [];
-        // Send existing URLs to backend so it can merge
         data.append(`existingImages_${f.name}`, JSON.stringify(existing));
-        // Send new files
         newF.forEach(file => data.append(f.name, file));
       });
 
@@ -149,11 +249,22 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
     } finally { setSubmitting(false); }
   };
 
-  const startEdit = (item) => {
+  const startEdit = async (item) => {
     setEditingId(item._id);
 
-    // Normalize the item: parse any JSON-stringified array fields back into arrays
-    const normalized = { ...item };
+    let normalized = { ...item };
+
+    if (module === 'projects') {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/projects/${item._id}`);
+        if (res.data.success) {
+          normalized = res.data.data;
+        }
+      } catch (err) {
+        console.error("Error fetching project details for edit:", err);
+      }
+    }
+
     fields.forEach(f => {
       if (f.type === 'array') {
         normalized[f.name] = parseArrayField(normalized[f.name]);
@@ -165,7 +276,7 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
     // Pre-populate existingImages for multi-file fields
     const existing = {};
     fields.filter(f => f.type === 'file' && f.multiple).forEach(f => {
-      const val = item[f.name];
+      const val = normalized[f.name];
       existing[f.name] = Array.isArray(val) ? val : [];
     });
     setExistingImages(existing);
@@ -173,7 +284,7 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
     // Pre-populate singlePreviews for single-file fields
     const singles = {};
     fields.filter(f => f.type === 'file' && !f.multiple).forEach(f => {
-      if (item[f.name]) singles[f.name] = item[f.name];
+      if (normalized[f.name]) singles[f.name] = normalized[f.name];
     });
     setSinglePreviews(singles);
 
@@ -210,7 +321,7 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-slate-50/50 border-b border-slate-100">
-                  {fields.map(f => (
+                  {fields.filter(f => f.type !== 'phases').map(f => (
                     <th key={f.name} className="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400">{f.label}</th>
                   ))}
                   <th className="p-6 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Actions</th>
@@ -219,7 +330,7 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
               <tbody className="divide-y divide-slate-50">
                 {items.map((item) => (
                   <tr key={item._id} className="hover:bg-slate-50/50 transition-colors group">
-                    {fields.map(f => (
+                    {fields.filter(f => f.type !== 'phases').map(f => (
                       <td key={f.name} className="p-6 text-sm font-semibold text-slate-600">
                         {f.type === 'file' ? (
                           <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden border border-slate-200">
@@ -332,6 +443,149 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
                           </div>
                         )
                       )}
+                    </div>
+                  ) : f.type === 'phases' ? (
+                    <div className="space-y-4">
+                      <div className="space-y-4">
+                        {(formData.phases || []).map((phase, phaseIdx) => {
+                          const isExpanded = expandedPhases[phaseIdx];
+                          return (
+                            <div key={phase._id || phase.tempId} className="border border-slate-200 rounded-3xl bg-slate-50/50 overflow-hidden transition-all">
+                              {/* Phase Accordion Header */}
+                              <div 
+                                className="flex justify-between items-center p-4 bg-slate-50 cursor-pointer select-none"
+                                onClick={() => togglePhaseExpand(phaseIdx)}
+                              >
+                                <span className="text-xs font-black text-slate-700 tracking-wider">
+                                  Phase {phaseIdx + 1}: {phase.title || 'Untitled Phase'}
+                                </span>
+                                <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                  <button
+                                    type="button"
+                                    onClick={() => togglePhaseExpand(phaseIdx)}
+                                    className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
+                                  >
+                                    {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => removePhase(phaseIdx)}
+                                    className="text-red-500 hover:text-red-600 transition-colors p-1"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Phase Accordion Content */}
+                              {isExpanded && (
+                                <div className="p-6 border-t border-slate-200 space-y-4 bg-white">
+                                  {/* Title */}
+                                  <div className="space-y-1">
+                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Phase Title *</label>
+                                    <input
+                                      type="text"
+                                      value={phase.title || ''}
+                                      onChange={(e) => handlePhaseChange(phaseIdx, 'title', e.target.value)}
+                                      placeholder="e.g. Design & Prototyping"
+                                      required
+                                      className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-[#426369]/10"
+                                    />
+                                  </div>
+
+                                  {/* Key Points (Summary) */}
+                                  <div className="space-y-2">
+                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Key Points / Execution Summary</label>
+                                    <div className="space-y-2 bg-slate-50/50 p-4 rounded-2xl border border-slate-100/50">
+                                      {(phase.summary || []).map((point, idx) => (
+                                        <div key={idx} className="flex gap-2">
+                                          <input
+                                            type="text"
+                                            value={point || ''}
+                                            onChange={(e) => handlePhaseArrayChange(phaseIdx, 'summary', idx, e.target.value)}
+                                            placeholder="Enter execution step..."
+                                            className="flex-1 bg-white border border-slate-100 rounded-xl p-2.5 text-xs font-semibold outline-none"
+                                          />
+                                          <button
+                                            type="button"
+                                            onClick={() => removePhaseArrayItem(phaseIdx, 'summary', idx)}
+                                            className="text-red-400 hover:text-red-500 transition-colors"
+                                          >
+                                            <MinusCircle size={20} />
+                                          </button>
+                                        </div>
+                                      ))}
+                                      <button
+                                        type="button"
+                                        onClick={() => addPhaseArrayItem(phaseIdx, 'summary')}
+                                        className="flex items-center gap-1.5 text-[9px] font-black uppercase text-[#426369] hover:opacity-80 transition-opacity"
+                                      >
+                                        <PlusCircle size={16} /> Add Key Point
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {/* Images */}
+                                  <div className="space-y-2">
+                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Phase Images</label>
+                                    <div className="relative border border-dashed border-slate-200 rounded-xl p-4 bg-slate-50 text-center hover:bg-slate-100/50 transition-colors">
+                                      <input
+                                        type="file"
+                                        multiple
+                                        onChange={(e) => handlePhaseImagesChange(phaseIdx, e.target.files)}
+                                        accept="image/*"
+                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                      />
+                                      <UploadCloud className="mx-auto text-slate-300 mb-1" size={24} />
+                                      <p className="text-[9px] font-black uppercase text-slate-400">Click to upload phase visuals</p>
+                                    </div>
+
+                                    {/* Image Previews */}
+                                    {((phase.images || []).length > 0 || (phase.newImages || []).length > 0) && (
+                                      <div className="flex flex-wrap gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100">
+                                        {/* Existing Images */}
+                                        {(phase.images || []).map((url, imgIdx) => (
+                                          <div key={`ex-${imgIdx}`} className="relative group/img">
+                                            <img src={url} className="w-12 h-12 object-cover rounded-lg border border-white shadow-sm" alt="" />
+                                            <button
+                                              type="button"
+                                              onClick={() => removePhaseExistingImage(phaseIdx, imgIdx)}
+                                              className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity shadow-md hover:bg-red-600 cursor-pointer"
+                                            >
+                                              <X size={8} />
+                                            </button>
+                                          </div>
+                                        ))}
+                                        {/* New Image Previews */}
+                                        {(phase.newImages || []).map((file, imgIdx) => (
+                                          <div key={`new-${imgIdx}`} className="relative group/img">
+                                            <img src={URL.createObjectURL(file)} className="w-12 h-12 object-cover rounded-lg border border-[#426369]/40 shadow-sm" alt="" />
+                                            <button
+                                              type="button"
+                                              onClick={() => removePhaseNewFile(phaseIdx, imgIdx)}
+                                              className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity shadow-md hover:bg-red-600 cursor-pointer"
+                                            >
+                                              <X size={8} />
+                                            </button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={addPhase}
+                        className="flex items-center gap-2 text-xs font-black uppercase text-[#426369] bg-[#426369]/5 hover:bg-[#426369]/10 px-4 py-2.5 rounded-xl border border-[#426369]/10 transition-colors cursor-pointer"
+                      >
+                        <PlusCircle size={18} /> Add New Phase
+                      </button>
                     </div>
                   ) : f.type === 'array' ? (
                     <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">

@@ -5,16 +5,11 @@ import { upload } from "../middleware/multerMiddleware.js";
 
 const projectRoutes = express.Router();
 
-const projectUploads = upload.fields([
-  { name: 'mainImage', maxCount: 1 },
-  { name: 'galleryImages', maxCount: 10 }
-]);
-
-projectRoutes.post("/create", adminAuth, projectUploads, createProject);
+projectRoutes.post("/create", adminAuth, upload.any(), createProject);
 projectRoutes.get("/all", getProjects);
 projectRoutes.get('/featured',getFeaturedProjects);
 projectRoutes.get('/service',getProjectsByService);
-projectRoutes.put("/:id", adminAuth, projectUploads,updateProject);
+projectRoutes.put("/:id", adminAuth, upload.any(), updateProject);
 projectRoutes.delete("/:id", adminAuth, deleteProject);
 projectRoutes.get("/:id", getProjectByIdWithDetails);
 

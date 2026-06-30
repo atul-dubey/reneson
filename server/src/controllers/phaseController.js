@@ -22,12 +22,6 @@ export const createPhase = async (req, res) => {
       data: phase,
     });
   } catch (error) {
-    if (error.code === 11000) {
-      return res.status(409).json({
-        success: false,
-        message: `Phase code "${error.keyValue?.phaseCode}" already exists. Each phase must have a unique code.`,
-      });
-    }
     res.status(500).json({
       success: false,
       message: "Failed to create phase",
@@ -38,7 +32,7 @@ export const createPhase = async (req, res) => {
 
 export const getAllPhases = async (req, res) => {
   try {
-    const phases = await PhaseModel.find().sort({ order: 1, createdAt: 1 });
+    const phases = await PhaseModel.find().sort({ createdAt: 1 });
 
     res.status(200).json({
       success: true,
@@ -108,12 +102,6 @@ export const updatePhase = async (req, res) => {
       data: updated,
     });
   } catch (error) {
-    if (error.code === 11000) {
-      return res.status(409).json({
-        success: false,
-        message: `Phase code "${error.keyValue?.phaseCode}" already exists. Each phase must have a unique code.`,
-      });
-    }
     res.status(500).json({
       success: false,
       message: "Update phase failed",

@@ -65,7 +65,6 @@ function App() {
                 <Route path="testimonials" element={<CRUDPage {...adminConfigs.testimonials} />} />
                 <Route path="clients" element={<CRUDPage {...adminConfigs.clients} />} />
                 <Route path="stats" element={<CRUDPage {...adminConfigs.stats} />} />
-                <Route path="phase" element={<CRUDPage {...adminConfigs.phase} />} />
               </Routes>
             </AdminLayout>
           ) : (

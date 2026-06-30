@@ -166,7 +166,7 @@ const ProjectDetail = () => {
                     <div className="flex items-center gap-6">
                       <span className="text-6xl font-black text-slate-100">0{idx + 1}</span>
                       <div className="h-[2px] w-12 bg-[#426369]"></div>
-                      <h4 className="text-2xl font-black text-slate-900 uppercase tracking-tight">
+                      <h4 className="text-2xl font-black text-slate-900 tracking-tight">
                         {phase.title}
                       </h4>
                     </div>
