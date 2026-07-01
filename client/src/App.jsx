@@ -17,6 +17,7 @@ import ProjectDetail from './pages/ProjectDetail.jsx'
 import ScrollToTop from './components/scrollToTop.jsx'
 import {Toaster} from 'react-hot-toast'
 import { usePageTracking } from './utils/analytics.js'
+import ErrorPage from './pages/ErrorPage.jsx'
 
 function App() {
   usePageTracking();
@@ -40,6 +41,8 @@ function App() {
       <ScrollToTop/>
       {showScheduler && <GoogleCalender/>}
       <Routes>
+        <Route path="/error" element={<ErrorPage />} />
+
         <Route path="/*" element={
           <>
             <Navbar />
@@ -49,6 +52,7 @@ function App() {
               <Route path="/portfolio" element={<Portfolio />} />
               <Route path="/service/:serviceName" element={<ServiceDetail />} />
               <Route path="/project/:id" element={<ProjectDetail/>}/>
+              <Route path="*" element={<ErrorPage type="404" />} />
             </Routes>
             <Footer />
           </>
