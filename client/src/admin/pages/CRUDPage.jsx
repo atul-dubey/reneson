@@ -11,7 +11,7 @@ const parseArrayField = (value) => {
     try {
       const parsed = JSON.parse(value);
       if (Array.isArray(parsed)) return parsed;
-    } catch (_) {}
+    } catch (_) { }
   }
   return [];
 };
@@ -89,9 +89,28 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
   const handlePhaseImagesChange = (phaseIdx, files) => {
     const updatedPhases = [...(formData.phases || [])];
     const incoming = Array.from(files);
+
+    // 1. Validate Mimetypes
+    const invalidTypes = incoming.filter(file => !file.type || !file.type.startsWith('image/'));
+    if (invalidTypes.length > 0) {
+      toast.error(`Only image files are allowed! Rejected: ${invalidTypes.map(f => f.name).join(', ')}`);
+    }
+
+    let validIncoming = incoming.filter(file => file.type && file.type.startsWith('image/'));
+
+    // 2. Validate Size (30MB limit)
+    const sizeLimit = 30 * 1024 * 1024;
+    const oversized = validIncoming.filter(file => file.size > sizeLimit);
+    if (oversized.length > 0) {
+      toast.error(`Files too large! Max limit is 30MB. Rejected: ${oversized.map(f => f.name).join(', ')}`);
+    }
+
+    validIncoming = validIncoming.filter(file => file.size <= sizeLimit);
+    if (validIncoming.length === 0) return;
+
     updatedPhases[phaseIdx] = {
       ...updatedPhases[phaseIdx],
-      newImages: [...(updatedPhases[phaseIdx].newImages || []), ...incoming]
+      newImages: [...(updatedPhases[phaseIdx].newImages || []), ...validIncoming]
     };
     setFormData(prev => ({ ...prev, phases: updatedPhases }));
   };
@@ -133,15 +152,47 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
     const { name, value, type, checked, files } = e.target;
     if (type === 'file') {
       const fieldConfig = fields.find(f => f.name === name);
+      const sizeLimit = 30 * 1024 * 1024; // 30MB
+      
       if (fieldConfig?.multiple) {
         // Append new files to existing new-file list
         const incoming = Array.from(files);
+
+        // 1. Validate Mimetypes
+        const invalidTypes = incoming.filter(file => !file.type || !file.type.startsWith('image/'));
+        if (invalidTypes.length > 0) {
+          toast.error(`Only image files are allowed! Rejected: ${invalidTypes.map(f => f.name).join(', ')}`);
+        }
+
+        let validIncoming = incoming.filter(file => file.type && file.type.startsWith('image/'));
+
+        // 2. Validate Size
+        const oversized = validIncoming.filter(file => file.size > sizeLimit);
+        if (oversized.length > 0) {
+          toast.error(`Files too large! Max limit is 30MB. Rejected: ${oversized.map(f => f.name).join(', ')}`);
+        }
+
+        validIncoming = validIncoming.filter(file => file.size <= sizeLimit);
+        if (validIncoming.length === 0) return;
+
         setNewFiles(prev => ({
           ...prev,
-          [name]: [...(prev[name] || []), ...incoming],
+          [name]: [...(prev[name] || []), ...validIncoming],
         }));
       } else {
         const file = files[0];
+        if (!file) return;
+
+        if (!file.type || !file.type.startsWith('image/')) {
+          toast.error(`Only image files are allowed! Rejected: ${file.name}`);
+          return;
+        }
+
+        if (file.size > sizeLimit) {
+          toast.error(`File too large! Max limit is 30MB. Rejected: ${file.name}`);
+          return;
+        }
+
         setFormData(prev => ({ ...prev, [name]: file }));
         setSinglePreviews(prev => ({ ...prev, [name]: URL.createObjectURL(file) }));
       }
@@ -452,7 +503,7 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
                           return (
                             <div key={phase._id || phase.tempId} className="border border-slate-200 rounded-3xl bg-slate-50/50 overflow-hidden transition-all">
                               {/* Phase Accordion Header */}
-                              <div 
+                              <div
                                 className="flex justify-between items-center p-4 bg-slate-50 cursor-pointer select-none"
                                 onClick={() => togglePhaseExpand(phaseIdx)}
                               >
