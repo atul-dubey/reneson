@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAdmin } from '../context/AdminContext';
-import { Trash2, Edit, Plus, X, Save, Loader2, UploadCloud, PlusCircle, MinusCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Trash2, Edit, Plus, X, Save, Loader2, UploadCloud, PlusCircle, MinusCircle, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 // Helper: safely parse a value that might be a JSON-stringified array
@@ -32,6 +32,20 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
   const { token } = useAdmin();
 
   const [expandedPhases, setExpandedPhases] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredItems = items.filter(item => {
+    if (!searchQuery) return true;
+    return fields.some(f => {
+      if (f.type === 'file' || f.type === 'phases') return false;
+      const val = item[f.name];
+      if (val === undefined || val === null) return false;
+      if (Array.isArray(val)) {
+        return val.some(element => String(element).toLowerCase().includes(searchQuery.toLowerCase()));
+      }
+      return String(val).toLowerCase().includes(searchQuery.toLowerCase());
+    });
+  });
 
   const togglePhaseExpand = (index) => {
     setExpandedPhases(prev => ({ ...prev, [index]: !prev[index] }));
@@ -139,7 +153,10 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
     } catch (err) { console.error("Fetch Error"); } finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchData(); }, [module]);
+  useEffect(() => {
+    fetchData();
+    setSearchQuery('');
+  }, [module]);
 
   const resetFileStates = () => {
     setExistingImages({});
@@ -367,6 +384,24 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
       </div>
 
       <div className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm">
+          <div className="p-6 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input
+                type="text"
+                placeholder={`Search ${title.toLowerCase()}...`}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-2xl pl-11 pr-4 py-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-[#426369]/10 focus:border-[#426369]/30 transition-all placeholder:text-slate-400"
+              />
+            </div>
+            {searchQuery && (
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Found {filteredItems.length} {filteredItems.length === 1 ? 'result' : 'results'}
+              </span>
+            )}
+          </div>
+
         {loading ? (<div className="py-20 flex justify-center"><Loader2 className="animate-spin text-slate-300" size={40} /></div>) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
@@ -379,36 +414,44 @@ const CRUDPage = ({ title, module, fields, readOnly = false }) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {items.map((item) => (
-                  <tr key={item._id} className="hover:bg-slate-50/50 transition-colors group">
-                    {fields.filter(f => f.type !== 'phases').map(f => (
-                      <td key={f.name} className="p-6 text-sm font-semibold text-slate-600">
-                        {f.type === 'file' ? (
-                          <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden border border-slate-200">
-                            <img
-                              src={Array.isArray(item[f.name]) ? item[f.name][0] : item[f.name]}
-                              className="w-full h-full object-cover"
-                              alt={f.label}
-                              onError={(e) => e.target.src = 'https://placehold.co/100x100?text=NA'}
-                            />
-                          </div>
-                        ) : f.type === 'array' ? (
-                          <span className="text-[10px] bg-slate-100 px-2 py-1 rounded-md">
-                            {Array.isArray(item[f.name]) ? `${item[f.name].length} items` : '0 items'}
-                          </span>
-                        ) : (
-                          <span className="truncate max-w-[150px] block">
-                            {typeof item[f.name] === 'boolean' ? (item[f.name] ? 'Yes' : 'No') : String(item[f.name] || '—')}
-                          </span>
-                        )}
-                      </td>
-                    ))}
-                    <td className="p-6 text-right flex justify-end gap-2">
-                      {!readOnly && <button onClick={() => startEdit(item)} className="p-2 text-slate-400 hover:text-[#426369] transition-colors cursor-pointer"><Edit size={18} /></button>}
-                      <button onClick={() => handleDelete(item._id)} className="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"><Trash2 size={18} /></button>
+                {filteredItems.length === 0 ? (
+                  <tr>
+                    <td colSpan={fields.filter(f => f.type !== 'phases').length + 1} className="p-12 text-center text-sm font-semibold text-slate-400">
+                      {searchQuery ? 'No results found matching your search query.' : 'No records available.'}
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredItems.map((item) => (
+                    <tr key={item._id} className="hover:bg-slate-50/50 transition-colors group">
+                      {fields.filter(f => f.type !== 'phases').map(f => (
+                        <td key={f.name} className="p-6 text-sm font-semibold text-slate-600">
+                          {f.type === 'file' ? (
+                            <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden border border-slate-200">
+                              <img
+                                src={Array.isArray(item[f.name]) ? item[f.name][0] : item[f.name]}
+                                className="w-full h-full object-cover"
+                                alt={f.label}
+                                onError={(e) => e.target.src = 'https://placehold.co/100x100?text=NA'}
+                              />
+                            </div>
+                          ) : f.type === 'array' ? (
+                            <span className="text-[10px] bg-slate-100 px-2 py-1 rounded-md">
+                              {Array.isArray(item[f.name]) ? `${item[f.name].length} items` : '0 items'}
+                            </span>
+                          ) : (
+                            <span className="truncate max-w-[150px] block">
+                              {typeof item[f.name] === 'boolean' ? (item[f.name] ? 'Yes' : 'No') : String(item[f.name] || '—')}
+                            </span>
+                          )}
+                        </td>
+                      ))}
+                      <td className="p-6 text-right flex justify-end gap-2">
+                        {!readOnly && <button onClick={() => startEdit(item)} className="p-2 text-slate-400 hover:text-[#426369] transition-colors cursor-pointer"><Edit size={18} /></button>}
+                        <button onClick={() => handleDelete(item._id)} className="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"><Trash2 size={18} /></button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
